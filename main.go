@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"mime"
 	"net/http"
 	"os"
@@ -100,8 +101,11 @@ func addVideo(c *gin.Context) {
 	}
 
 	// Verifica o tipo MIME do arquivo
+
 	mimeType := video.Header.Get("Content-Type")
+	log.Println(mimeType)
 	ext, err := mime.ExtensionsByType(mimeType)
+	log.Println(ext, err)
 	if err != nil || len(ext) == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Unsupported video format"})
 		return
