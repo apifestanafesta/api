@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"mime"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -102,14 +100,14 @@ func addVideo(c *gin.Context) {
 
 	// Verifica o tipo MIME do arquivo
 
-	mimeType := video.Header.Get("Content-Type")
-	log.Println(mimeType)
-	ext, err := mime.ExtensionsByType(mimeType)
-	log.Println(ext, err)
-	if err != nil || len(ext) == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Unsupported video format"})
-		return
-	}
+	// mimeType := video.Header.Get("Content-Type")
+	// log.Println(mimeType)
+	// ext, err := mime.ExtensionsByType(mimeType)
+	// log.Println(ext, err)
+	// if err != nil || len(ext) == 0 {
+	// 	c.JSON(http.StatusBadRequest, gin.H{"error": "Unsupported video format"})
+	// 	return
+	// }
 
 	videoFolder := filepath.Join("videos", id)
 	os.MkdirAll(videoFolder, os.ModePerm)
@@ -118,7 +116,7 @@ func addVideo(c *gin.Context) {
 	videoNumber := len(videoFiles) + 1
 
 	// Usa a extensão apropriada com base no tipo MIME
-	filename := fmt.Sprintf("%d%s", videoNumber, ext[0])
+	filename := fmt.Sprintf("%d%s", videoNumber, ".webm")
 	videoPath := filepath.Join(videoFolder, filename)
 	c.SaveUploadedFile(video, videoPath)
 
