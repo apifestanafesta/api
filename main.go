@@ -98,29 +98,34 @@ func addVideo(c *gin.Context) {
 		return
 	}
 
-	// Verifica o tipo MIME do arquivo
-
-	// mimeType := video.Header.Get("Content-Type")
-	// log.Println(mimeType)
-	// ext, err := mime.ExtensionsByType(mimeType)
-	// log.Println(ext, err)
-	// if err != nil || len(ext) == 0 {
-	// 	c.JSON(http.StatusBadRequest, gin.H{"error": "Unsupported video format"})
-	// 	return
-	// }
-
 	videoFolder := filepath.Join("videos", id)
-	os.MkdirAll(videoFolder, os.ModePerm)
+	err = os.MkdirAll(videoFolder, os.ModePerm)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not create directory"})
+		return
+	}
 
-	videoFiles, _ := os.ReadDir(videoFolder)
+	videoFiles, err := os.ReadDir(videoFolder)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not read directory"})
+		return
+	}
 	videoNumber := len(videoFiles) + 1
 
-	// Usa a extensão apropriada com base no tipo MIME
-	filename := fmt.Sprintf("%d%s", videoNumber, ".webm")
-	videoPath := filepath.Join(videoFolder, filename)
-	c.SaveUploadedFile(video, videoPath)
+	// Salvar o arquivo de vídeo com áudio
+	videoFilename := fmt.Sprintf("%d%s", videoNumber, ".mp4")
+	videoPath := filepath.Join(videoFolder, videoFilename)
+	err = c.SaveUploadedFile(video, videoPath)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not save video"})
+		return
+	}
 
-	c.JSON(http.StatusCreated, gin.H{"id": person.ID, "video_path": videoPath})
+	c.JSON(http.StatusCreated, gin.H{
+		"id":         person.ID,
+		"video_path": videoPath,
+		"filename":   videoFilename,
+	})
 }
 
 func listVideos(c *gin.Context) {
