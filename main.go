@@ -26,6 +26,7 @@ func main() {
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
+	
 	db.InitDB()
 
 	r.POST("/person", addPerson)
