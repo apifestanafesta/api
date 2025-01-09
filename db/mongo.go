@@ -15,10 +15,12 @@ import (
 var Client *mongo.Client
 var PersonCollection *mongo.Collection
 
+
 type Person struct {
 	ID        string `bson:"_id,omitempty"`
 	Name      string `bson:"name"`
 	ImagePath string `bson:"image_path"`
+	
 }
 
 func InitDB() {
