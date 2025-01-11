@@ -26,7 +26,7 @@ func main() {
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
-	
+
 	db.InitDB()
 
 	r.POST("/person", addPerson)
@@ -36,6 +36,7 @@ func main() {
 	r.GET("/person/:id/videos", listVideos)
 	r.GET("/videos/:id/:filename", getVideo)
 	r.GET("/person/:id/image", getImage) // Nova rota para obter a imagem
+	r.GET("/videos/all", listAllVideos)
 
 	r.Run(":8580")
 }
@@ -182,4 +183,43 @@ func addPersonAll(c *gin.Context) {
 	}
 	fmt.Println(data)
 	c.JSON(http.StatusOK, data)
+}
+
+func listAllVideos(c *gin.Context) {
+	videoRootFolder := "videos"
+
+	if _, err := os.Stat(videoRootFolder); os.IsNotExist(err) {
+		c.JSON(http.StatusNotFound, gin.H{"error": "No videos found"})
+		return
+	}
+
+	allVideos := make(map[string][]string)
+	persons, err := os.ReadDir(videoRootFolder)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not read directory"})
+		return
+	}
+
+	for _, person := range persons {
+		if !person.IsDir() {
+			continue
+		}
+		personID := person.Name()
+		personVideoFolder := filepath.Join(videoRootFolder, personID)
+
+		videoFiles, err := os.ReadDir(personVideoFolder)
+		if err != nil {
+			continue
+		}
+
+		var videoUrls []string
+		for _, file := range videoFiles {
+			videoUrls = append(videoUrls, fmt.Sprintf("%s/videos/%s/%s", c.Request.Host, personID, file.Name()))
+		}
+		if len(videoUrls) > 0 {
+			allVideos[personID] = videoUrls
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{"videos": allVideos})
 }
